@@ -1,5 +1,6 @@
-from sklearn import grid_search, datasets
+﻿from sklearn import datasets
 from sklearn.ensemble import RandomForestClassifier
+from pyspark import SparkContext
 
 # from sklearn.grid_search import GridSearchCV
 # Use spark_sklearn’s grid search instead:
@@ -12,6 +13,8 @@ class timeit():
     def __exit__(self, *args, **kwargs):
         print('runtime: {}'.format(self.datetime.now() - self.tic))
 
+sc = SparkContext.getOrCreate()
+
 digits = datasets.load_digits()
 X, y = digits.data, digits.target
 param_grid = {"max_depth": [3, None],
@@ -21,7 +24,9 @@ param_grid = {"max_depth": [3, None],
               "bootstrap": [True, False],
               "criterion": ["gini", "entropy"],
               "n_estimators": [10, 20, 40, 80]}
-gs = grid_search.GridSearchCV(RandomForestClassifier(), param_grid=param_grid)
+
+gs = GridSearchCV(sc=sc, estimator=RandomForestClassifier(), param_grid=param_grid)
+
 with timeit():
     gs.fit(X, y)
 
